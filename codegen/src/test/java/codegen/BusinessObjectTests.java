@@ -19,7 +19,23 @@ public class BusinessObjectTests {
 		Generator boGen = new Generator();
 		boGen.setPackageName("com.crimsonpig.business");
 		boGen.setTypeName("Simple");
-		boGen.setOutputPath("src/main/java/com/crimsonpig/business/Simple.java");
+		boGen.setOutputPath("src/main/java/com/crimsonpig/business");
+		try {
+			boGen.buildBo(simple);
+		} catch (IOException e) {
+			fail();
+		}
+		
+	}
+	
+	@Test
+	public void complexBoTest() {
+		
+		RecordFormat simple = SampleRecordFormats.getComplexRecordFormat();
+		Generator boGen = new Generator();
+		boGen.setPackageName("com.crimsonpig.business");
+		boGen.setTypeName("Complex");
+		boGen.setOutputPath("src/main/java/com/crimsonpig/business");
 		try {
 			boGen.buildBo(simple);
 		} catch (IOException e) {

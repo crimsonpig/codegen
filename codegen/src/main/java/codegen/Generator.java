@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Stream;
 
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
@@ -19,11 +20,11 @@ import codetypes.RecordFormat;
 public class Generator {
 
 	private String packageName;
-	
+
 	private String typeName;
-	
+
 	private String outputPath;
-	
+
 	private Set<String> imports = new TreeSet<String>();
 
 	public void setPackageName(String packageName) {
@@ -39,59 +40,68 @@ public class Generator {
 	}
 
 	public void buildBo(RecordFormat simple) throws IOException {
-	
+
 		JavaClassSource boClass = Roaster.create(JavaClassSource.class);
 		boClass.setName(typeName);
 		boClass.setPackage(packageName);
-		
-		simple.getFields().forEach(field -> {
-			String type = "String";
-			if(field instanceof FieldGroup){
-				
-			} else if(field instanceof FieldFormat){
-				FieldFormat ff = (FieldFormat) field;
-				String name = toCamelCase(ff.getName());
-				if("9".equals(ff.getType()) || "3".equals(ff.getType())){
-					if(ff.isImpliedDecimal()){
-						type = "BigDecimal";
-						imports.add("java.math.BigDecimal");
-					} else {
-						type = "Integer";
-					}
-				}
-				if(ff.getOccurs() > 1){
-					String typeParam = "<" + type + ">";
-					type = "List<" + type + ">";
-					name = name + "s";
-					imports.add("java.util.List");
-					imports.add("java.util.ArrayList");
-					
-					boClass.addProperty(type, name).getField().setLiteralInitializer("new ArrayList" + typeParam + "(" + ff.getOccurs() + ")");		
-				} else {
-					boClass.addProperty(type, name);		
-				}
-		
-			}
 
-			
+		Stream<FieldFormat> fieldFormats = simple.getFields().stream()
+				.filter(field -> !field.getName().startsWith("FILLER")).filter(field -> field instanceof FieldFormat)
+				.map(field -> (FieldFormat) field);
+
+		Stream<FieldGroup> fieldGroups = simple.getFields().stream()
+				.filter(field -> !field.getName().startsWith("FILLER")).filter(field -> field instanceof FieldGroup)
+				.map(field -> (FieldGroup) field);
+		
+		handleFieldGroups(fieldGroups);
+
+		fieldFormats.forEach(field -> {
+			String type = "String";
+
+			FieldFormat ff = (FieldFormat) field;
+			String name = toCamelCase(ff.getName());
+			if ("9".equals(ff.getType()) || "3".equals(ff.getType())) {
+				if (ff.isImpliedDecimal()) {
+					type = "BigDecimal";
+					imports.add("java.math.BigDecimal");
+				} else {
+					type = "Integer";
+				}
+			}
+			if (ff.getOccurs() > 1) {
+				String typeParam = "<" + type + ">";
+				type = "List<" + type + ">";
+				name = name + "s";
+				imports.add("java.util.List");
+				imports.add("java.util.ArrayList");
+
+				boClass.addProperty(type, name).getField()
+						.setLiteralInitializer("new ArrayList" + typeParam + "(" + ff.getOccurs() + ")");
+			} else {
+				boClass.addProperty(type, name);
+			}
 		});
-		
+
 		imports.forEach(imp -> boClass.addImport(imp));
-		
-		File output = new File(outputPath);
+
+		File output = new File(outputPath + File.separator + typeName + ".java");
 		PrintWriter classWriter = new PrintWriter(new FileWriter(output));
 		classWriter.print(boClass.getOrigin().toString());
 		classWriter.flush();
 		classWriter.close();
 	}
 
+	private void handleFieldGroups(Stream<FieldGroup> fieldGroups) {
+	
+	}
+
 	private String toCamelCase(String name) {
 		String[] parts = name.split("_");
 		StringBuilder camel = new StringBuilder();
-		for(int i=0; i< parts.length; i++){
+		for (int i = 0; i < parts.length; i++) {
 			String part = parts[i];
 			char firstChar = part.charAt(0);
-			if(i==0){
+			if (i == 0) {
 				firstChar = Character.toLowerCase(firstChar);
 			}
 			camel.append(firstChar);
@@ -100,5 +110,5 @@ public class Generator {
 
 		return camel.toString();
 	}
-	
+
 }
