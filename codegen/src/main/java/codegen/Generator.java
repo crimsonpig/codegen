@@ -85,6 +85,7 @@ public class Generator {
 		imports.forEach(imp -> boClass.addImport(imp));
 
 		File output = new File(outputPath + File.separator + typeName + ".java");
+		output.mkdirs();
 		PrintWriter classWriter = new PrintWriter(new FileWriter(output));
 		classWriter.print(boClass.getOrigin().toString());
 		classWriter.flush();
