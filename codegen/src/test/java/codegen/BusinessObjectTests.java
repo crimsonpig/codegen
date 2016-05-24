@@ -23,6 +23,7 @@ public class BusinessObjectTests {
 		try {
 			boGen.buildBo(simple);
 		} catch (IOException e) {
+			e.printStackTrace();
 			fail();
 		}
 		
@@ -39,6 +40,7 @@ public class BusinessObjectTests {
 		try {
 			boGen.buildBo(simple);
 		} catch (IOException e) {
+			e.printStackTrace();
 			fail();
 		}
 		
