@@ -9,7 +9,7 @@ import org.junit.Test;
 import codetypes.RecordFormat;
 import codetypes.data.SampleRecordFormats;
 
-public class SimpleBusinessObjectTest {
+public class BusinessObjectTests {
 
 	
 	@Test
